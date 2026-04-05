@@ -1,0 +1,577 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ucolor - Memory Game</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap');
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #080808;
+            background-image: radial-gradient(circle at 50% 50%, #1a1a1a 0%, #080808 100%);
+            color: #ffffff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            overflow: hidden;
+        }
+
+        .bg-glow {
+            position: absolute;
+            width: 400px;
+            height: 400px;
+            background: rgba(255, 255, 255, 0.03);
+            filter: blur(100px);
+            border-radius: 50%;
+            z-index: -1;
+            animation: pulseBg 8s infinite alternate;
+        }
+
+        @keyframes pulseBg {
+            from { transform: scale(1); opacity: 0.3; }
+            to { transform: scale(1.5); opacity: 0.6; }
+        }
+
+        .game-card {
+            background-color: #000000;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 32px;
+            width: 100%;
+            max-width: 600px;
+            aspect-ratio: 1.2 / 1;
+            box-shadow: 0 40px 100px rgba(0, 0, 0, 0.8);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .reveal {
+            animation: revealContent 1.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+
+        @keyframes revealContent {
+            from { opacity: 0; transform: translateY(30px) scale(0.95); filter: blur(15px); }
+            to { opacity: 1; transform: translateY(0) scale(1); filter: blur(0); }
+        }
+
+        .timer-pulse {
+            animation: timerScale 1.5s infinite ease-in-out;
+        }
+
+        @keyframes timerScale {
+            0%, 100% { transform: scale(1); opacity: 0.15; }
+            50% { transform: scale(1.08); opacity: 0.3; }
+        }
+
+        .btn-circle {
+            width: 64px;
+            height: 64px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #ffffff;
+            color: #000;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            cursor: pointer;
+        }
+
+        .btn-circle:hover { 
+            transform: scale(1.15);
+            background-color: #f0f0f0;
+            box-shadow: 0 10px 25px rgba(255, 255, 255, 0.15);
+        }
+        
+        .slider-container {
+            position: absolute; left: 0; top: 0; bottom: 0; width: 60px;
+            display: flex; padding: 10px; gap: 8px; z-index: 20;
+            transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .slider-container:hover { width: 160px; }
+
+        .v-slider-wrap {
+            position: relative; flex: 1; height: 100%; border-radius: 12px; overflow: hidden;
+            opacity: 0.2;
+            transition: all 0.4s ease;
+        }
+        .slider-container:hover .v-slider-wrap { opacity: 1; }
+        .v-slider-wrap:hover { flex: 2; }
+
+        input[type="range"].v-slider {
+            -webkit-appearance: none; appearance: none; width: 450px; height: 32px;
+            background: transparent; position: absolute; top: 50%; left: 50%;
+            transform: translate(-50%, -50%) rotate(-90deg); cursor: pointer; z-index: 5;
+        }
+        input[type="range"].v-slider::-webkit-slider-thumb {
+            -webkit-appearance: none; width: 24px; height: 24px;
+            background: #fff; border: 2px solid rgba(0,0,0,0.1); border-radius: 50%;
+            box-shadow: 0 0 15px rgba(0,0,0,0.3);
+        }
+
+        #hue-bg { background: linear-gradient(to bottom, #ff0000, #ff00ff, #0000ff, #00ffff, #00ff00, #ffff00, #ff0000); }
+        #sat-bg { background: linear-gradient(to bottom, var(--pure-color, #f00), #888); }
+        #light-bg { background: linear-gradient(to bottom, #fff, var(--pure-color, #f00), #000); }
+
+        .target-btn {
+            position: absolute; bottom: 32px; right: 32px; width: 72px; height: 72px;
+            border-radius: 50%; background: white; color: black;
+            display: flex; align-items: center; justify-content: center; z-index: 30;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+        .target-btn:hover { transform: scale(1.1) rotate(90deg); }
+
+        .animate-down { animation: slideInDown 1s cubic-bezier(0.16, 1, 0.3, 1); }
+        .animate-up { animation: slideInUp 1s cubic-bezier(0.16, 1, 0.3, 1); }
+
+        .pixel-divider {
+            position: absolute; left: 0; right: 0; top: 50%; height: 48px;
+            transform: translateY(-50%); z-index: 10; display: flex;
+        }
+        .pixel-half {
+            flex: 1; background-size: 12px 12px;
+            background-image: 
+                linear-gradient(45deg, var(--c) 25%, transparent 25%), 
+                linear-gradient(-45deg, var(--c) 25%, transparent 25%), 
+                linear-gradient(45deg, transparent 75%, var(--c) 75%), 
+                linear-gradient(-45deg, transparent 75%, var(--c) 75%);
+            background-color: var(--ct);
+        }
+
+        /* Difficulty Toggle */
+        .toggle-bg { background: #1a1a1a; border-radius: 20px; padding: 4px; display: flex; gap: 4px; }
+        .toggle-btn { padding: 4px 12px; border-radius: 16px; font-size: 10px; font-weight: 900; transition: all 0.3s; cursor: pointer; }
+        .toggle-btn.active { background: white; color: black; }
+
+        /* Language Switcher */
+        .lang-btn { opacity: 0.5; transition: opacity 0.3s; cursor: pointer; }
+        .lang-btn.active { opacity: 1; }
+    </style>
+</head>
+<body>
+
+    <div class="bg-glow"></div>
+
+    <div id="app" class="w-full px-4 flex justify-center">
+        <!-- Start Screen -->
+        <div id="start-screen" class="game-card flex flex-col justify-center px-16 reveal">
+            <!-- Header Controls -->
+            <div class="absolute top-8 right-16 flex items-center gap-6 z-50">
+                <div class="toggle-bg">
+                    <div id="easy-btn" class="toggle-btn active" onclick="setDiff('easy')">EASY</div>
+                    <div id="hard-btn" class="toggle-btn" onclick="setDiff('hard')">HARD</div>
+                </div>
+                <div class="flex gap-2">
+                    <span class="lang-btn active" id="lang-en" onclick="setLang('en')" title="English">🇺🇸</span>
+                    <span class="lang-btn" id="lang-de" onclick="setLang('de')" title="Deutsch">🇩🇪</span>
+                    <span class="lang-btn" id="lang-es" onclick="setLang('es')" title="Español">🇪🇸</span>
+                    <span class="lang-btn" id="lang-ja" onclick="setLang('ja')" title="日本語">🇯🇵</span>
+                </div>
+            </div>
+
+            <h1 class="text-8xl font-black mb-2 tracking-tighter italic">ucolor</h1>
+            <div id="highscore-display" class="text-zinc-500 font-bold uppercase text-[10px] mb-6 tracking-[0.3em]">Highscore: 0.00</div>
+            
+            <div id="desc-box" class="max-w-sm">
+                <p class="text-zinc-400 text-sm mb-4 leading-relaxed" id="txt-recall">Humans can't reliably recall colors. This is a simple game to see how good (or bad) you are at it.</p>
+                <p class="text-white text-lg font-bold mb-10 leading-snug" id="txt-show">We'll show you one color, then you'll try and recreate it.</p>
+            </div>
+
+            <h3 class="text-xs font-black text-zinc-500 uppercase tracking-widest mb-4" id="txt-mode">Solo or multiplayer?</h3>
+            <div class="flex items-center gap-6">
+                <button onclick="initGame(false)" class="btn-circle" title="Solo Mode">
+                    <svg width="28" height="28" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                </button>
+                <button onclick="initGame(true)" class="btn-circle" title="Multiplayer Mode">
+                    <svg width="28" height="28" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                </button>
+            </div>
+        </div>
+
+        <!-- Memorize Screen -->
+        <div id="show-screen" class="game-card hidden">
+            <div id="target-bg" class="absolute inset-0"></div>
+            <div id="countdown-number" class="absolute right-20 top-20 text-[10rem] font-black opacity-15 leading-none tracking-tighter timer-pulse">6.00</div>
+            <div class="absolute right-20 top-[14rem] text-xl font-bold text-white/30 tracking-tight" id="txt-memorize">Memorize this color</div>
+        </div>
+
+        <!-- Guess Screen -->
+        <div id="pick-screen" class="game-card hidden">
+            <div id="user-bg" class="absolute inset-0"></div>
+            <div class="absolute top-8 right-8 flex flex-col items-end gap-2">
+                <div class="text-[10px] font-black text-white/80 bg-white/10 backdrop-blur-md px-4 py-1.5 rounded-full uppercase tracking-widest" id="player-turn-label">Your Turn</div>
+                <div class="text-4xl font-black text-white/20 tracking-tighter" id="guess-timer">30.00</div>
+            </div>
+            
+            <div class="slider-container">
+                <div class="v-slider-wrap" id="hue-bg"><input type="range" id="h-slider" class="v-slider" min="0" max="360" value="180" oninput="updateUserColor()"></div>
+                <div class="v-slider-wrap" id="sat-bg"><input type="range" id="s-slider" class="v-slider" min="0" max="100" value="50" oninput="updateUserColor()"></div>
+                <div class="v-slider-wrap" id="light-bg"><input type="range" id="l-slider" class="v-slider" min="0" max="100" value="50" oninput="updateUserColor()"></div>
+            </div>
+            <button onclick="lockGuess()" class="target-btn">
+                <svg width="36" height="36" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 8v8M8 12h8"/><circle cx="12" cy="12" r="3"/></svg>
+            </button>
+        </div>
+
+        <!-- Result Screen -->
+        <div id="score-screen" class="game-card hidden flex flex-col">
+            <div id="score-user-bg" class="h-1/2 w-full relative overflow-hidden animate-down flex">
+                <div id="p1-display" class="flex-1 p-10 flex flex-col justify-between border-r border-black/10">
+                    <div class="flex justify-between items-start">
+                        <span class="text-[10px] font-black text-black/40 uppercase tracking-[0.2em]" id="p1-label-main">Player 1</span>
+                        <div class="text-right">
+                            <div class="text-8xl font-black text-black leading-none tracking-tighter" id="round-score-val">0.00</div>
+                        </div>
+                    </div>
+                    <div>
+                        <div id="new-highscore-badge" class="hidden text-[10px] font-black bg-black text-white px-3 py-1 rounded-full w-fit mb-3 animate-bounce">NEW HIGHSCORE!</div>
+                        <div class="text-[10px] font-bold text-black/30 uppercase tracking-widest" id="txt-selection">Selection</div>
+                        <div class="text-sm font-bold text-black opacity-80" id="user-hsl-label">H0 S0 B0</div>
+                    </div>
+                </div>
+                <div id="p2-display" class="flex-1 p-10 flex flex-col justify-between hidden">
+                    <div class="flex justify-between items-start">
+                        <span class="text-[10px] font-black text-black/40 uppercase tracking-[0.2em]">Player 2</span>
+                        <div class="text-right">
+                            <div class="text-8xl font-black text-black leading-none tracking-tighter" id="p2-score-val">0.00</div>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="text-[10px] font-bold text-black/30 uppercase tracking-widest" id="txt-selection-p2">Selection</div>
+                        <div class="text-sm font-bold text-black opacity-80" id="p2-hsl-label">H0 S0 B0</div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="pixel-sep" class="pixel-divider">
+                <div id="pixel-left" class="pixel-half" style="--c: transparent; --ct: transparent;"></div>
+                <div id="pixel-right" class="pixel-half hidden" style="--c: transparent; --ct: transparent;"></div>
+            </div>
+
+            <div id="score-orig-bg" class="h-1/2 w-full p-10 relative overflow-hidden animate-up flex flex-col justify-end">
+                <div class="flex justify-between items-end">
+                    <div>
+                        <div class="text-[10px] font-bold text-white/40 uppercase tracking-widest" id="txt-original">Original</div>
+                        <div class="text-sm font-bold text-white" id="orig-hsl-label">H0 S0 B0</div>
+                    </div>
+                    <div class="flex flex-col items-end gap-6">
+                        <div class="text-2xl font-bold text-white max-w-[300px] text-right italic" id="score-comment">...</div>
+                        <button onclick="resetToMenu()" class="btn-circle !bg-white !text-black !w-14 !h-14 flex items-center justify-center">
+                            <svg width="28" height="28" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Credits Section Outside -->
+    <div class="fixed bottom-8 reveal" style="animation-delay: 0.5s">
+        <a href="https://discordapp.com/users/1056147064569987163" target="_blank" class="text-[10px] font-bold text-zinc-600 uppercase tracking-widest hover:text-white transition-colors">
+            Made by kinetx
+        </a>
+    </div>
+
+    <script>
+        const translations = {
+            en: {
+                recall: "Humans can't reliably recall colors. This is a simple game to see how good (or bad) you are at it.",
+                show: "We'll show you one color, then you'll try and recreate it.",
+                mode: "Solo or multiplayer?",
+                memorize: "Memorize this color",
+                turn: "Your Turn",
+                p1: "Player 1",
+                selection: "Selection",
+                original: "Original",
+                p1_main: "Player 1",
+                final: "Final Score",
+                p2_turn: "Player 2's Turn"
+            },
+            de: {
+                recall: "Menschen können sich Farben nicht zuverlässig merken. Dies ist ein einfaches Spiel, um zu sehen, wie gut (oder schlecht) du darin bist.",
+                show: "Wir zeigen dir eine Farbe, und du versuchst, sie nachzubauen.",
+                mode: "Solo oder Multiplayer?",
+                memorize: "Merk dir diese Farbe",
+                turn: "Du bist dran",
+                p1: "Spieler 1",
+                selection: "Auswahl",
+                original: "Original",
+                p1_main: "Spieler 1",
+                final: "Punktestand",
+                p2_turn: "Spieler 2 ist dran"
+            },
+            es: {
+                recall: "Los humanos no pueden recordar colores con fiabilidad. Este es un juego sencillo para ver qué tan bueno (o malo) eres.",
+                show: "Te mostraremos un color y luego intentarás recrearlo.",
+                mode: "¿Solo o multijugador?",
+                memorize: "Memoriza este color",
+                turn: "Tu turno",
+                p1: "Jugador 1",
+                selection: "Selección",
+                original: "Original",
+                p1_main: "Jugador 1",
+                final: "Puntuación final",
+                p2_turn: "Turno del Jugador 2"
+            },
+            ja: {
+                recall: "人間は色を正確に思い出すことができません。これはあなたの能力を試すシンプルなゲームです。",
+                show: "1つの色を表示します。その後、それを再現してみてください。",
+                mode: "ソロまたはマルチプレイヤー？",
+                memorize: "この色を覚えてください",
+                turn: "あなたの番です",
+                p1: "プレイヤー 1",
+                selection: "選択",
+                original: "オリジナル",
+                p1_main: "プレイヤー 1",
+                final: "最終スコア",
+                p2_turn: "プレイヤー 2の番"
+            }
+        };
+
+        let currentLang = 'en';
+        let currentDiff = 'easy';
+        let targetColor = null;
+        let p1Guess = null;
+        let p2Guess = null;
+        let isMultiplayer = false;
+        let currentPlayer = 1; 
+        const guessTimeLimit = 30000;
+        let activeTimer = null;
+
+        function setLang(lang) {
+            currentLang = lang;
+            document.querySelectorAll('.lang-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById(`lang-${lang}`).classList.add('active');
+            
+            const t = translations[lang];
+            document.getElementById('txt-recall').innerText = t.recall;
+            document.getElementById('txt-show').innerText = t.show;
+            document.getElementById('txt-mode').innerText = t.mode;
+            document.getElementById('txt-memorize').innerText = t.memorize;
+            document.getElementById('txt-selection').innerText = t.selection;
+            document.getElementById('txt-selection-p2').innerText = t.selection;
+            document.getElementById('txt-original').innerText = t.original;
+            updateTurnLabel();
+        }
+
+        function setDiff(diff) {
+            currentDiff = diff;
+            document.getElementById('easy-btn').classList.toggle('active', diff === 'easy');
+            document.getElementById('hard-btn').classList.toggle('active', diff === 'hard');
+        }
+
+        function updateTurnLabel() {
+            const label = document.getElementById('player-turn-label');
+            if (isMultiplayer) {
+                label.innerText = currentPlayer === 1 ? translations[currentLang].p1 : translations[currentLang].p2_turn;
+            } else {
+                label.innerText = translations[currentLang].turn;
+            }
+        }
+
+        window.onload = () => {
+            updateHighscoreDisplay();
+            setLang('en');
+        };
+
+        function updateHighscoreDisplay() {
+            const highscore = localStorage.getItem('colorGameHighscore') || "0.00";
+            document.getElementById('highscore-display').innerText = `Highscore: ${highscore}`;
+        }
+
+        function resetToMenu() {
+            if(activeTimer) clearInterval(activeTimer);
+            ['show-screen', 'pick-screen', 'score-screen'].forEach(id => document.getElementById(id).classList.add('hidden'));
+            const startScreen = document.getElementById('start-screen');
+            startScreen.classList.remove('hidden');
+            startScreen.classList.add('reveal');
+            updateHighscoreDisplay();
+            p1Guess = null; p2Guess = null; currentPlayer = 1;
+        }
+
+        function hslToRgb(h, s, l) {
+            s /= 100; l /= 100;
+            const k = n => (n + h / 30) % 12;
+            const a = s * Math.min(l, 1 - l);
+            const f = n => l - a * Math.max(-1, Math.min(k(n) - 3, Math.min(9 - k(n), 1)));
+            return { r: Math.round(255 * f(0)), g: Math.round(255 * f(8)), b: Math.round(255 * f(4)) };
+        }
+
+        function animateValue(obj, start, end, duration, callback) {
+            let startTimestamp = null;
+            const step = (timestamp) => {
+                if (!startTimestamp) startTimestamp = timestamp;
+                const progress = Math.min((timestamp - startTimestamp) / duration, 1);
+                obj.innerHTML = (progress * (end - start) + start).toFixed(2);
+                if (progress < 1) window.requestAnimationFrame(step);
+                else if (callback) callback();
+            };
+            window.requestAnimationFrame(step);
+        }
+
+        function initGame(multi) {
+            isMultiplayer = multi;
+            targetColor = {
+                h: Math.floor(Math.random() * 361),
+                s: Math.floor(Math.random() * 81) + 10,
+                l: Math.floor(Math.random() * 51) + 25
+            };
+            currentPlayer = 1;
+            p1Guess = null; p2Guess = null;
+            
+            document.getElementById('p2-display').classList.toggle('hidden', !isMultiplayer);
+            document.getElementById('pixel-right').classList.toggle('hidden', !isMultiplayer);
+            document.getElementById('p1-label-main').innerText = isMultiplayer ? translations[currentLang].p1_main : translations[currentLang].final;
+            
+            showNextColor();
+        }
+
+        function showNextColor() {
+            if(activeTimer) clearInterval(activeTimer);
+            ['start-screen', 'pick-screen', 'score-screen'].forEach(id => document.getElementById(id).classList.add('hidden'));
+            const screen = document.getElementById('show-screen');
+            screen.classList.remove('hidden');
+            screen.classList.add('reveal');
+            
+            document.getElementById('target-bg').style.backgroundColor = `hsl(${targetColor.h}, ${targetColor.s}%, ${targetColor.l}%)`;
+            
+            const memTime = currentDiff === 'hard' ? 1000 : 6000;
+            const numEl = document.getElementById('countdown-number');
+            numEl.innerText = (memTime/1000).toFixed(2);
+            
+            let start = Date.now();
+            activeTimer = setInterval(() => {
+                let elapsed = Date.now() - start;
+                let remaining = Math.max(0, (memTime - elapsed) / 1000);
+                numEl.innerText = remaining.toFixed(2);
+                if (remaining <= 0) {
+                    clearInterval(activeTimer);
+                    startGuessing();
+                }
+            }, 16);
+        }
+
+        function startGuessing() {
+            if(activeTimer) clearInterval(activeTimer);
+            document.getElementById('show-screen').classList.add('hidden');
+            const pick = document.getElementById('pick-screen');
+            pick.classList.remove('hidden');
+            pick.classList.add('reveal');
+            
+            updateTurnLabel();
+            document.getElementById('h-slider').value = Math.floor(Math.random() * 360);
+            updateUserColor();
+
+            const timerEl = document.getElementById('guess-timer');
+            timerEl.innerText = "30.00";
+            let start = Date.now();
+            activeTimer = setInterval(() => {
+                let elapsed = Date.now() - start;
+                let remaining = Math.max(0, (guessTimeLimit - elapsed) / 1000);
+                timerEl.innerText = remaining.toFixed(2);
+                if (remaining <= 0) {
+                    clearInterval(activeTimer);
+                    lockGuess();
+                }
+            }, 16);
+        }
+
+        function updateUserColor() {
+            const h = document.getElementById('h-slider').value;
+            const s = document.getElementById('s-slider').value;
+            const l = document.getElementById('l-slider').value;
+            document.documentElement.style.setProperty('--pure-color', `hsl(${h}, 100%, 50%)`);
+            document.getElementById('user-bg').style.backgroundColor = `hsl(${h}, ${s}%, ${l}%)`;
+        }
+
+        function getComment(score) {
+            if (score > 9.9) return "Absolute perfection.";
+            if (score > 9.5) return "Impressive as fuck.";
+            if (score > 9.0) return "Not terrible.";
+            if (score > 7.5) return "You're getting there.";
+            if (score > 5.0) return "Did you even look?";
+            if (score > 3.0) return "Hard to be this wrong.";
+            return "You had to work hard to be this wrong.";
+        }
+
+        function lockGuess() {
+            if(activeTimer) clearInterval(activeTimer);
+            const user = {
+                h: parseInt(document.getElementById('h-slider').value),
+                s: parseInt(document.getElementById('s-slider').value),
+                l: parseInt(document.getElementById('l-slider').value)
+            };
+            if (currentPlayer === 1) {
+                p1Guess = user;
+                if (isMultiplayer) {
+                    currentPlayer = 2;
+                    startGuessing();
+                } else {
+                    showFinalResults();
+                }
+            } else {
+                p2Guess = user;
+                showFinalResults();
+            }
+        }
+
+        function calculateScore(t, u) {
+            const tr = hslToRgb(t.h, t.s, t.l);
+            const ur = hslToRgb(u.h, u.s, u.l);
+            const dist = Math.sqrt(Math.pow(tr.r-ur.r,2) + Math.pow(tr.g-ur.g,2) + Math.pow(tr.b-ur.b,2));
+            const maxDist = Math.sqrt(Math.pow(255,2) * 3);
+            const normalizedDist = dist / maxDist;
+            let score = 10 * Math.pow(1 - normalizedDist, 3);
+            return Math.max(0, score);
+        }
+
+        function showFinalResults() {
+            if(activeTimer) clearInterval(activeTimer);
+            document.getElementById('pick-screen').classList.add('hidden');
+            const scoreScreen = document.getElementById('score-screen');
+            scoreScreen.classList.remove('hidden');
+            scoreScreen.classList.add('reveal');
+            
+            const s1 = calculateScore(targetColor, p1Guess);
+            const ct = `hsl(${targetColor.h}, ${targetColor.s}%, ${targetColor.l}%)`;
+            const c1 = `hsl(${p1Guess.h}, ${p1Guess.s}%, ${p1Guess.l}%)`;
+
+            document.getElementById('p1-display').style.backgroundColor = c1;
+            document.getElementById('pixel-left').style.setProperty('--c', c1);
+            document.getElementById('pixel-left').style.setProperty('--ct', ct);
+            document.getElementById('user-hsl-label').innerText = `H${p1Guess.h} S${p1Guess.s} B${p1Guess.l}`;
+            
+            let bestOverallScore = s1;
+
+            if (isMultiplayer) {
+                const s2 = calculateScore(targetColor, p2Guess);
+                const c2 = `hsl(${p2Guess.h}, ${p2Guess.s}%, ${p2Guess.l}%)`;
+                document.getElementById('p2-display').style.backgroundColor = c2;
+                document.getElementById('pixel-right').style.setProperty('--c', c2);
+                document.getElementById('pixel-right').style.setProperty('--ct', ct);
+                document.getElementById('p2-hsl-label').innerText = `H${p2Guess.h} S${p2Guess.s} B${p2Guess.l}`;
+                
+                animateValue(document.getElementById('round-score-val'), 0, s1, 2500);
+                animateValue(document.getElementById('p2-score-val'), 0, s2, 2500);
+                bestOverallScore = Math.max(s1, s2);
+            } else {
+                animateValue(document.getElementById('round-score-val'), 0, s1, 2500, () => {
+                    const currentHS = parseFloat(localStorage.getItem('colorGameHighscore') || "0.00");
+                    if (s1 > currentHS) {
+                        localStorage.setItem('colorGameHighscore', s1.toFixed(2));
+                        document.getElementById('new-highscore-badge').classList.remove('hidden');
+                    }
+                });
+            }
+
+            document.getElementById('score-orig-bg').style.backgroundColor = ct;
+            document.getElementById('orig-hsl-label').innerText = `H${targetColor.h} S${targetColor.s} B${targetColor.l}`;
+            document.getElementById('score-comment').innerText = getComment(bestOverallScore);
+        }
+    </script>
+</body>
+</html>
