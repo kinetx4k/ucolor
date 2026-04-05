@@ -41,13 +41,28 @@
             background-color: #000000;
             border: 1px solid rgba(255, 255, 255, 0.1);
             border-radius: 32px;
-            width: 100%;
+            width: 95%;
             max-width: 600px;
             aspect-ratio: 1.2 / 1;
             box-shadow: 0 40px 100px rgba(0, 0, 0, 0.8);
             position: relative;
             overflow: hidden;
+            transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
         }
+
+        /* Mobile Adaptation Classes */
+        .is-mobile.game-card {
+            max-width: 500px;
+            aspect-ratio: 0.65 / 1;
+            max-height: 85vh;
+        }
+        .is-mobile h1 { font-size: 5rem; }
+        .is-mobile #countdown-number { font-size: 5rem; right: 10px; top: 10px; }
+        .is-mobile #txt-memorize { right: 10px; top: 6rem; font-size: 1rem; }
+        
+        /* Fix for buggy score display in mobile/multiplayer */
+        .is-mobile #round-score-val, .is-mobile #p2-score-val { font-size: 3.5rem; }
+        .is-mobile #p1-display, .is-mobile #p2-display { padding: 1.5rem; }
 
         .reveal {
             animation: revealContent 1.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
@@ -142,12 +157,10 @@
             background-color: var(--ct);
         }
 
-        /* Difficulty Toggle */
         .toggle-bg { background: #1a1a1a; border-radius: 20px; padding: 4px; display: flex; gap: 4px; }
         .toggle-btn { padding: 4px 12px; border-radius: 16px; font-size: 10px; font-weight: 900; transition: all 0.3s; cursor: pointer; }
         .toggle-btn.active { background: white; color: black; }
 
-        /* Language Switcher */
         .lang-btn { opacity: 0.5; transition: opacity 0.3s; cursor: pointer; }
         .lang-btn.active { opacity: 1; }
     </style>
@@ -159,7 +172,15 @@
     <div id="app" class="w-full px-4 flex justify-center">
         <!-- Start Screen -->
         <div id="start-screen" class="game-card flex flex-col justify-center px-16 reveal">
-            <!-- Header Controls -->
+            <!-- Header Controls (Left: Device Switcher) -->
+            <div class="absolute top-8 left-16 flex items-center z-50">
+                <div class="toggle-bg">
+                    <div id="desktop-btn" class="toggle-btn active" onclick="setDevice('desktop')">DESKTOP</div>
+                    <div id="mobile-btn" class="toggle-btn" onclick="setDevice('mobile')">MOBILE</div>
+                </div>
+            </div>
+
+            <!-- Header Controls (Right: Difficulty & Language) -->
             <div class="absolute top-8 right-16 flex items-center gap-6 z-50">
                 <div class="toggle-bg">
                     <div id="easy-btn" class="toggle-btn active" onclick="setDiff('easy')">EASY</div>
@@ -220,11 +241,11 @@
         <!-- Result Screen -->
         <div id="score-screen" class="game-card hidden flex flex-col">
             <div id="score-user-bg" class="h-1/2 w-full relative overflow-hidden animate-down flex">
-                <div id="p1-display" class="flex-1 p-10 flex flex-col justify-between border-r border-black/10">
+                <div id="p1-display" class="flex-1 p-10 flex flex-col justify-between border-r border-black/10 min-w-0">
                     <div class="flex justify-between items-start">
                         <span class="text-[10px] font-black text-black/40 uppercase tracking-[0.2em]" id="p1-label-main">Player 1</span>
                         <div class="text-right">
-                            <div class="text-8xl font-black text-black leading-none tracking-tighter" id="round-score-val">0.00</div>
+                            <div class="text-8xl font-black text-black leading-none tracking-tighter overflow-hidden" id="round-score-val">0.00</div>
                         </div>
                     </div>
                     <div>
@@ -233,11 +254,11 @@
                         <div class="text-sm font-bold text-black opacity-80" id="user-hsl-label">H0 S0 B0</div>
                     </div>
                 </div>
-                <div id="p2-display" class="flex-1 p-10 flex flex-col justify-between hidden">
+                <div id="p2-display" class="flex-1 p-10 flex flex-col justify-between hidden min-w-0">
                     <div class="flex justify-between items-start">
                         <span class="text-[10px] font-black text-black/40 uppercase tracking-[0.2em]">Player 2</span>
                         <div class="text-right">
-                            <div class="text-8xl font-black text-black leading-none tracking-tighter" id="p2-score-val">0.00</div>
+                            <div class="text-8xl font-black text-black leading-none tracking-tighter overflow-hidden" id="p2-score-val">0.00</div>
                         </div>
                     </div>
                     <div>
@@ -270,7 +291,7 @@
     </div>
 
     <!-- Credits Section Outside -->
-    <div class="fixed bottom-8 reveal" style="animation-delay: 0.5s">
+    <div class="fixed bottom-8 reveal" id="credits-outside" style="animation-delay: 0.5s">
         <a href="https://discordapp.com/users/1056147064569987163" target="_blank" class="text-[10px] font-bold text-zinc-600 uppercase tracking-widest hover:text-white transition-colors">
             Made by kinetx
         </a>
@@ -341,6 +362,22 @@
         let currentPlayer = 1; 
         const guessTimeLimit = 30000;
         let activeTimer = null;
+        let selectedDevice = 'desktop';
+
+        function setDevice(device) {
+            selectedDevice = device;
+            const card = document.querySelectorAll('.game-card');
+            card.forEach(c => {
+                if (device === 'mobile') {
+                    c.classList.add('is-mobile');
+                } else {
+                    c.classList.remove('is-mobile');
+                }
+            });
+            // Update UI
+            document.getElementById('desktop-btn').classList.toggle('active', device === 'desktop');
+            document.getElementById('mobile-btn').classList.toggle('active', device === 'mobile');
+        }
 
         function setLang(lang) {
             currentLang = lang;
