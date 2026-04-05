@@ -42,7 +42,7 @@
             border: 1px solid rgba(255, 255, 255, 0.1);
             border-radius: 48px;
             width: 95%;
-            max-width: 1100px; /* Doppelt so groß wie vorher (600px) */
+            max-width: 1100px;
             aspect-ratio: 1.4 / 1;
             box-shadow: 0 60px 150px rgba(0, 0, 0, 0.9);
             position: relative;
@@ -50,7 +50,6 @@
             transition: aspect-ratio 0.5s ease;
         }
 
-        /* Mobile Optimierung: Tausche Seitenverhältnis für vertikale Screens */
         @media (max-width: 768px) {
             .game-card {
                 aspect-ratio: 0.7 / 1;
@@ -151,12 +150,10 @@
             background-color: var(--ct);
         }
 
-        /* Difficulty Toggle */
         .toggle-bg { background: #1a1a1a; border-radius: 24px; padding: 6px; display: flex; gap: 6px; }
         .toggle-btn { padding: 6px 16px; border-radius: 20px; font-size: 12px; font-weight: 900; transition: all 0.3s; cursor: pointer; }
         .toggle-btn.active { background: white; color: black; }
 
-        /* Language Switcher */
         .lang-btn { font-size: 1.5rem; opacity: 0.5; transition: opacity 0.3s; cursor: pointer; }
         .lang-btn.active { opacity: 1; }
     </style>
@@ -168,7 +165,6 @@
     <div id="app" class="w-full px-4 flex justify-center items-center h-full">
         <!-- Start Screen -->
         <div id="start-screen" class="game-card flex flex-col justify-center px-12 md:px-24 reveal">
-            <!-- Header Controls -->
             <div class="absolute top-6 right-6 md:top-12 md:right-24 flex flex-col md:flex-row items-end md:items-center gap-4 md:gap-8 z-50">
                 <div class="toggle-bg">
                     <div id="easy-btn" class="toggle-btn active" onclick="setDiff('easy')">EASY</div>
@@ -278,7 +274,6 @@
         </div>
     </div>
 
-    <!-- Credits Section Outside -->
     <div class="fixed bottom-6 md:bottom-12 reveal" style="animation-delay: 0.5s">
         <a href="https://discordapp.com/users/1056147064569987163" target="_blank" class="text-xs md:text-sm font-bold text-zinc-600 uppercase tracking-widest hover:text-white transition-colors">
             Made by kinetx
@@ -350,6 +345,7 @@
         let currentPlayer = 1; 
         const guessTimeLimit = 30000;
         let activeTimer = null;
+        let isGameRunning = false;
 
         function setLang(lang) {
             currentLang = lang;
@@ -368,6 +364,7 @@
         }
 
         function setDiff(diff) {
+            if (isGameRunning) return;
             currentDiff = diff;
             document.getElementById('easy-btn').classList.toggle('active', diff === 'easy');
             document.getElementById('hard-btn').classList.toggle('active', diff === 'hard');
@@ -393,7 +390,9 @@
         }
 
         function resetToMenu() {
+            isGameRunning = false;
             if(activeTimer) clearInterval(activeTimer);
+            activeTimer = null;
             ['show-screen', 'pick-screen', 'score-screen'].forEach(id => document.getElementById(id).classList.add('hidden'));
             const startScreen = document.getElementById('start-screen');
             startScreen.classList.remove('hidden');
@@ -423,6 +422,7 @@
         }
 
         function initGame(multi) {
+            isGameRunning = true;
             isMultiplayer = multi;
             targetColor = {
                 h: Math.floor(Math.random() * 361),
@@ -459,6 +459,7 @@
                 numEl.innerText = remaining.toFixed(2);
                 if (remaining <= 0) {
                     clearInterval(activeTimer);
+                    activeTimer = null;
                     startGuessing();
                 }
             }, 16);
@@ -484,6 +485,7 @@
                 timerEl.innerText = remaining.toFixed(2);
                 if (remaining <= 0) {
                     clearInterval(activeTimer);
+                    activeTimer = null;
                     lockGuess();
                 }
             }, 16);
@@ -509,6 +511,7 @@
 
         function lockGuess() {
             if(activeTimer) clearInterval(activeTimer);
+            activeTimer = null;
             const user = {
                 h: parseInt(document.getElementById('h-slider').value),
                 s: parseInt(document.getElementById('s-slider').value),
@@ -539,7 +542,9 @@
         }
 
         function showFinalResults() {
+            isGameRunning = false;
             if(activeTimer) clearInterval(activeTimer);
+            activeTimer = null;
             document.getElementById('pick-screen').classList.add('hidden');
             const scoreScreen = document.getElementById('score-screen');
             scoreScreen.classList.remove('hidden');
