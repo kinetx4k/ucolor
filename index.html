@@ -23,10 +23,10 @@
 
         .bg-glow {
             position: absolute;
-            width: 400px;
-            height: 400px;
+            width: 600px;
+            height: 600px;
             background: rgba(255, 255, 255, 0.03);
-            filter: blur(100px);
+            filter: blur(120px);
             border-radius: 50%;
             z-index: -1;
             animation: pulseBg 8s infinite alternate;
@@ -40,13 +40,22 @@
         .game-card {
             background-color: #000000;
             border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 32px;
-            width: 100%;
-            max-width: 600px;
-            aspect-ratio: 1.2 / 1;
-            box-shadow: 0 40px 100px rgba(0, 0, 0, 0.8);
+            border-radius: 48px;
+            width: 95%;
+            max-width: 1100px; /* Doppelt so groß wie vorher (600px) */
+            aspect-ratio: 1.4 / 1;
+            box-shadow: 0 60px 150px rgba(0, 0, 0, 0.9);
             position: relative;
             overflow: hidden;
+            transition: aspect-ratio 0.5s ease;
+        }
+
+        /* Mobile Optimierung: Tausche Seitenverhältnis für vertikale Screens */
+        @media (max-width: 768px) {
+            .game-card {
+                aspect-ratio: 0.7 / 1;
+                max-height: 90vh;
+            }
         }
 
         .reveal {
@@ -68,8 +77,8 @@
         }
 
         .btn-circle {
-            width: 64px;
-            height: 64px;
+            width: 80px;
+            height: 80px;
             border-radius: 50%;
             display: flex;
             align-items: center;
@@ -87,14 +96,14 @@
         }
         
         .slider-container {
-            position: absolute; left: 0; top: 0; bottom: 0; width: 60px;
-            display: flex; padding: 10px; gap: 8px; z-index: 20;
+            position: absolute; left: 0; top: 0; bottom: 0; width: 80px;
+            display: flex; padding: 15px; gap: 12px; z-index: 20;
             transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
         }
-        .slider-container:hover { width: 160px; }
+        .slider-container:hover { width: 220px; }
 
         .v-slider-wrap {
-            position: relative; flex: 1; height: 100%; border-radius: 12px; overflow: hidden;
+            position: relative; flex: 1; height: 100%; border-radius: 16px; overflow: hidden;
             opacity: 0.2;
             transition: all 0.4s ease;
         }
@@ -102,12 +111,12 @@
         .v-slider-wrap:hover { flex: 2; }
 
         input[type="range"].v-slider {
-            -webkit-appearance: none; appearance: none; width: 450px; height: 32px;
+            -webkit-appearance: none; appearance: none; width: 80vh; height: 48px;
             background: transparent; position: absolute; top: 50%; left: 50%;
             transform: translate(-50%, -50%) rotate(-90deg); cursor: pointer; z-index: 5;
         }
         input[type="range"].v-slider::-webkit-slider-thumb {
-            -webkit-appearance: none; width: 24px; height: 24px;
+            -webkit-appearance: none; width: 32px; height: 32px;
             background: #fff; border: 2px solid rgba(0,0,0,0.1); border-radius: 50%;
             box-shadow: 0 0 15px rgba(0,0,0,0.3);
         }
@@ -117,11 +126,11 @@
         #light-bg { background: linear-gradient(to bottom, #fff, var(--pure-color, #f00), #000); }
 
         .target-btn {
-            position: absolute; bottom: 32px; right: 32px; width: 72px; height: 72px;
+            position: absolute; bottom: 48px; right: 48px; width: 96px; height: 96px;
             border-radius: 50%; background: white; color: black;
             display: flex; align-items: center; justify-content: center; z-index: 30;
             transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            box-shadow: 0 20px 50px rgba(0,0,0,0.6);
         }
         .target-btn:hover { transform: scale(1.1) rotate(90deg); }
 
@@ -129,11 +138,11 @@
         .animate-up { animation: slideInUp 1s cubic-bezier(0.16, 1, 0.3, 1); }
 
         .pixel-divider {
-            position: absolute; left: 0; right: 0; top: 50%; height: 48px;
+            position: absolute; left: 0; right: 0; top: 50%; height: 64px;
             transform: translateY(-50%); z-index: 10; display: flex;
         }
         .pixel-half {
-            flex: 1; background-size: 12px 12px;
+            flex: 1; background-size: 16px 16px;
             background-image: 
                 linear-gradient(45deg, var(--c) 25%, transparent 25%), 
                 linear-gradient(-45deg, var(--c) 25%, transparent 25%), 
@@ -143,12 +152,12 @@
         }
 
         /* Difficulty Toggle */
-        .toggle-bg { background: #1a1a1a; border-radius: 20px; padding: 4px; display: flex; gap: 4px; }
-        .toggle-btn { padding: 4px 12px; border-radius: 16px; font-size: 10px; font-weight: 900; transition: all 0.3s; cursor: pointer; }
+        .toggle-bg { background: #1a1a1a; border-radius: 24px; padding: 6px; display: flex; gap: 6px; }
+        .toggle-btn { padding: 6px 16px; border-radius: 20px; font-size: 12px; font-weight: 900; transition: all 0.3s; cursor: pointer; }
         .toggle-btn.active { background: white; color: black; }
 
         /* Language Switcher */
-        .lang-btn { opacity: 0.5; transition: opacity 0.3s; cursor: pointer; }
+        .lang-btn { font-size: 1.5rem; opacity: 0.5; transition: opacity 0.3s; cursor: pointer; }
         .lang-btn.active { opacity: 1; }
     </style>
 </head>
@@ -156,16 +165,16 @@
 
     <div class="bg-glow"></div>
 
-    <div id="app" class="w-full px-4 flex justify-center">
+    <div id="app" class="w-full px-4 flex justify-center items-center h-full">
         <!-- Start Screen -->
-        <div id="start-screen" class="game-card flex flex-col justify-center px-16 reveal">
+        <div id="start-screen" class="game-card flex flex-col justify-center px-12 md:px-24 reveal">
             <!-- Header Controls -->
-            <div class="absolute top-8 right-16 flex items-center gap-6 z-50">
+            <div class="absolute top-6 right-6 md:top-12 md:right-24 flex flex-col md:flex-row items-end md:items-center gap-4 md:gap-8 z-50">
                 <div class="toggle-bg">
                     <div id="easy-btn" class="toggle-btn active" onclick="setDiff('easy')">EASY</div>
                     <div id="hard-btn" class="toggle-btn" onclick="setDiff('hard')">HARD</div>
                 </div>
-                <div class="flex gap-2">
+                <div class="flex gap-4">
                     <span class="lang-btn active" id="lang-en" onclick="setLang('en')" title="English">🇺🇸</span>
                     <span class="lang-btn" id="lang-de" onclick="setLang('de')" title="Deutsch">🇩🇪</span>
                     <span class="lang-btn" id="lang-es" onclick="setLang('es')" title="Español">🇪🇸</span>
@@ -173,21 +182,21 @@
                 </div>
             </div>
 
-            <h1 class="text-8xl font-black mb-2 tracking-tighter italic">ucolor</h1>
-            <div id="highscore-display" class="text-zinc-500 font-bold uppercase text-[10px] mb-6 tracking-[0.3em]">Highscore: 0.00</div>
+            <h1 class="text-7xl md:text-[10rem] font-black mb-4 tracking-tighter italic leading-none">ucolor</h1>
+            <div id="highscore-display" class="text-zinc-500 font-bold uppercase text-xs md:text-sm mb-8 md:mb-12 tracking-[0.4em]">Highscore: 0.00</div>
             
-            <div id="desc-box" class="max-w-sm">
-                <p class="text-zinc-400 text-sm mb-4 leading-relaxed" id="txt-recall">Humans can't reliably recall colors. This is a simple game to see how good (or bad) you are at it.</p>
-                <p class="text-white text-lg font-bold mb-10 leading-snug" id="txt-show">We'll show you one color, then you'll try and recreate it.</p>
+            <div id="desc-box" class="max-w-xl">
+                <p class="text-zinc-400 text-base md:text-xl mb-6 leading-relaxed" id="txt-recall">Humans can't reliably recall colors. This is a simple game to see how good (or bad) you are at it.</p>
+                <p class="text-white text-2xl md:text-4xl font-bold mb-12 md:mb-20 leading-snug" id="txt-show">We'll show you one color, then you'll try and recreate it.</p>
             </div>
 
-            <h3 class="text-xs font-black text-zinc-500 uppercase tracking-widest mb-4" id="txt-mode">Solo or multiplayer?</h3>
-            <div class="flex items-center gap-6">
-                <button onclick="initGame(false)" class="btn-circle" title="Solo Mode">
-                    <svg width="28" height="28" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+            <h3 class="text-sm md:text-base font-black text-zinc-500 uppercase tracking-widest mb-6" id="txt-mode">Solo or multiplayer?</h3>
+            <div class="flex items-center gap-8">
+                <button onclick="initGame(false)" class="btn-circle !w-20 !h-20 md:!w-24 md:!h-24" title="Solo Mode">
+                    <svg width="36" height="36" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
                 </button>
-                <button onclick="initGame(true)" class="btn-circle" title="Multiplayer Mode">
-                    <svg width="28" height="28" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                <button onclick="initGame(true)" class="btn-circle !w-20 !h-20 md:!w-24 md:!h-24" title="Multiplayer Mode">
+                    <svg width="36" height="36" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
                 </button>
             </div>
         </div>
@@ -195,16 +204,16 @@
         <!-- Memorize Screen -->
         <div id="show-screen" class="game-card hidden">
             <div id="target-bg" class="absolute inset-0"></div>
-            <div id="countdown-number" class="absolute right-20 top-20 text-[10rem] font-black opacity-15 leading-none tracking-tighter timer-pulse">6.00</div>
-            <div class="absolute right-20 top-[14rem] text-xl font-bold text-white/30 tracking-tight" id="txt-memorize">Memorize this color</div>
+            <div id="countdown-number" class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 text-[12rem] md:text-[22rem] font-black opacity-20 leading-none tracking-tighter timer-pulse">6.00</div>
+            <div class="absolute bottom-12 left-1/2 -translate-x-1/2 text-2xl md:text-4xl font-bold text-white/40 tracking-tight" id="txt-memorize">Memorize this color</div>
         </div>
 
         <!-- Guess Screen -->
         <div id="pick-screen" class="game-card hidden">
             <div id="user-bg" class="absolute inset-0"></div>
-            <div class="absolute top-8 right-8 flex flex-col items-end gap-2">
-                <div class="text-[10px] font-black text-white/80 bg-white/10 backdrop-blur-md px-4 py-1.5 rounded-full uppercase tracking-widest" id="player-turn-label">Your Turn</div>
-                <div class="text-4xl font-black text-white/20 tracking-tighter" id="guess-timer">30.00</div>
+            <div class="absolute top-12 right-12 flex flex-col items-end gap-4">
+                <div class="text-xs md:text-sm font-black text-white/80 bg-white/10 backdrop-blur-md px-6 py-2 rounded-full uppercase tracking-widest" id="player-turn-label">Your Turn</div>
+                <div class="text-5xl md:text-8xl font-black text-white/20 tracking-tighter" id="guess-timer">30.00</div>
             </div>
             
             <div class="slider-container">
@@ -212,37 +221,37 @@
                 <div class="v-slider-wrap" id="sat-bg"><input type="range" id="s-slider" class="v-slider" min="0" max="100" value="50" oninput="updateUserColor()"></div>
                 <div class="v-slider-wrap" id="light-bg"><input type="range" id="l-slider" class="v-slider" min="0" max="100" value="50" oninput="updateUserColor()"></div>
             </div>
-            <button onclick="lockGuess()" class="target-btn">
-                <svg width="36" height="36" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 8v8M8 12h8"/><circle cx="12" cy="12" r="3"/></svg>
+            <button onclick="lockGuess()" class="target-btn !w-24 !h-24 md:!w-32 md:!h-32">
+                <svg width="48" height="48" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 8v8M8 12h8"/><circle cx="12" cy="12" r="3"/></svg>
             </button>
         </div>
 
         <!-- Result Screen -->
         <div id="score-screen" class="game-card hidden flex flex-col">
-            <div id="score-user-bg" class="h-1/2 w-full relative overflow-hidden animate-down flex">
-                <div id="p1-display" class="flex-1 p-10 flex flex-col justify-between border-r border-black/10">
+            <div id="score-user-bg" class="h-1/2 w-full relative overflow-hidden animate-down flex flex-col md:flex-row">
+                <div id="p1-display" class="flex-1 p-8 md:p-12 flex flex-col justify-between border-b md:border-b-0 md:border-r border-black/10">
                     <div class="flex justify-between items-start">
-                        <span class="text-[10px] font-black text-black/40 uppercase tracking-[0.2em]" id="p1-label-main">Player 1</span>
+                        <span class="text-xs md:text-sm font-black text-black/40 uppercase tracking-[0.2em]" id="p1-label-main">Player 1</span>
                         <div class="text-right">
-                            <div class="text-8xl font-black text-black leading-none tracking-tighter" id="round-score-val">0.00</div>
+                            <div class="text-7xl md:text-9xl font-black text-black leading-none tracking-tighter" id="round-score-val">0.00</div>
                         </div>
                     </div>
                     <div>
-                        <div id="new-highscore-badge" class="hidden text-[10px] font-black bg-black text-white px-3 py-1 rounded-full w-fit mb-3 animate-bounce">NEW HIGHSCORE!</div>
-                        <div class="text-[10px] font-bold text-black/30 uppercase tracking-widest" id="txt-selection">Selection</div>
-                        <div class="text-sm font-bold text-black opacity-80" id="user-hsl-label">H0 S0 B0</div>
+                        <div id="new-highscore-badge" class="hidden text-xs font-black bg-black text-white px-4 py-1 rounded-full w-fit mb-4 animate-bounce">NEW HIGHSCORE!</div>
+                        <div class="text-xs font-bold text-black/30 uppercase tracking-widest" id="txt-selection">Selection</div>
+                        <div class="text-lg font-bold text-black opacity-80" id="user-hsl-label">H0 S0 B0</div>
                     </div>
                 </div>
-                <div id="p2-display" class="flex-1 p-10 flex flex-col justify-between hidden">
+                <div id="p2-display" class="flex-1 p-8 md:p-12 flex flex-col justify-between hidden">
                     <div class="flex justify-between items-start">
-                        <span class="text-[10px] font-black text-black/40 uppercase tracking-[0.2em]">Player 2</span>
+                        <span class="text-xs md:text-sm font-black text-black/40 uppercase tracking-[0.2em]">Player 2</span>
                         <div class="text-right">
-                            <div class="text-8xl font-black text-black leading-none tracking-tighter" id="p2-score-val">0.00</div>
+                            <div class="text-7xl md:text-9xl font-black text-black leading-none tracking-tighter" id="p2-score-val">0.00</div>
                         </div>
                     </div>
                     <div>
-                        <div class="text-[10px] font-bold text-black/30 uppercase tracking-widest" id="txt-selection-p2">Selection</div>
-                        <div class="text-sm font-bold text-black opacity-80" id="p2-hsl-label">H0 S0 B0</div>
+                        <div class="text-xs font-bold text-black/30 uppercase tracking-widest" id="txt-selection-p2">Selection</div>
+                        <div class="text-lg font-bold text-black opacity-80" id="p2-hsl-label">H0 S0 B0</div>
                     </div>
                 </div>
             </div>
@@ -252,16 +261,16 @@
                 <div id="pixel-right" class="pixel-half hidden" style="--c: transparent; --ct: transparent;"></div>
             </div>
 
-            <div id="score-orig-bg" class="h-1/2 w-full p-10 relative overflow-hidden animate-up flex flex-col justify-end">
+            <div id="score-orig-bg" class="h-1/2 w-full p-8 md:p-12 relative overflow-hidden animate-up flex flex-col justify-end">
                 <div class="flex justify-between items-end">
                     <div>
-                        <div class="text-[10px] font-bold text-white/40 uppercase tracking-widest" id="txt-original">Original</div>
-                        <div class="text-sm font-bold text-white" id="orig-hsl-label">H0 S0 B0</div>
+                        <div class="text-xs md:text-sm font-bold text-white/40 uppercase tracking-widest" id="txt-original">Original</div>
+                        <div class="text-lg md:text-xl font-bold text-white" id="orig-hsl-label">H0 S0 B0</div>
                     </div>
-                    <div class="flex flex-col items-end gap-6">
-                        <div class="text-2xl font-bold text-white max-w-[300px] text-right italic" id="score-comment">...</div>
-                        <button onclick="resetToMenu()" class="btn-circle !bg-white !text-black !w-14 !h-14 flex items-center justify-center">
-                            <svg width="28" height="28" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+                    <div class="flex flex-col items-end gap-8">
+                        <div class="text-2xl md:text-5xl font-bold text-white max-w-2xl text-right italic" id="score-comment">...</div>
+                        <button onclick="resetToMenu()" class="btn-circle !bg-white !text-black !w-16 !h-16 md:!w-20 md:!h-20 flex items-center justify-center">
+                            <svg width="36" height="36" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
                         </button>
                     </div>
                 </div>
@@ -270,8 +279,8 @@
     </div>
 
     <!-- Credits Section Outside -->
-    <div class="fixed bottom-8 reveal" style="animation-delay: 0.5s">
-        <a href="https://discordapp.com/users/1056147064569987163" target="_blank" class="text-[10px] font-bold text-zinc-600 uppercase tracking-widest hover:text-white transition-colors">
+    <div class="fixed bottom-6 md:bottom-12 reveal" style="animation-delay: 0.5s">
+        <a href="https://discordapp.com/users/1056147064569987163" target="_blank" class="text-xs md:text-sm font-bold text-zinc-600 uppercase tracking-widest hover:text-white transition-colors">
             Made by kinetx
         </a>
     </div>
