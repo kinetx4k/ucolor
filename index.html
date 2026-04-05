@@ -14,6 +14,7 @@
             background-image: radial-gradient(circle at 50% 50%, #1a1a1a 0%, #080808 100%);
             color: #ffffff;
             display: flex;
+            flex-direction: column;
             justify-content: center;
             align-items: center;
             min-height: 100vh;
@@ -48,21 +49,24 @@
             position: relative;
             overflow: hidden;
             transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+            display: flex;
+            flex-direction: column;
         }
 
-        /* Mobile Adaptation Classes */
         .is-mobile.game-card {
-            max-width: 500px;
-            aspect-ratio: 0.65 / 1;
-            max-height: 85vh;
+            max-width: 450px;
+            aspect-ratio: 0.6 / 1;
+            max-height: 90vh;
         }
-        .is-mobile h1 { font-size: 5rem; }
-        .is-mobile #countdown-number { font-size: 5rem; right: 10px; top: 10px; }
-        .is-mobile #txt-memorize { right: 10px; top: 6rem; font-size: 1rem; }
+        .is-mobile h1 { font-size: 4.5rem; margin-top: 2rem; }
+        .is-mobile #countdown-number { font-size: 5rem; right: 20px; top: 120px; }
+        .is-mobile #txt-memorize { right: 20px; top: 200px; font-size: 0.9rem; }
         
-        /* Fix for buggy score display in mobile/multiplayer */
-        .is-mobile #round-score-val, .is-mobile #p2-score-val { font-size: 3.5rem; }
-        .is-mobile #p1-display, .is-mobile #p2-display { padding: 1.5rem; }
+        .is-mobile #score-user-bg { flex-direction: column; }
+        .is-mobile #round-score-val, .is-mobile #p2-score-val { font-size: 4rem; }
+        .is-mobile #p1-display, .is-mobile #p2-display { padding: 1.25rem; border-right: none; }
+        .is-mobile #p1-display { border-bottom: 1px solid rgba(0,0,0,0.1); }
+        .is-mobile .pixel-divider { top: 50%; height: 24px; }
 
         .reveal {
             animation: revealContent 1.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
@@ -132,7 +136,7 @@
         #light-bg { background: linear-gradient(to bottom, #fff, var(--pure-color, #f00), #000); }
 
         .target-btn {
-            position: absolute; bottom: 32px; right: 32px; width: 72px; height: 72px;
+            width: 72px; height: 72px;
             border-radius: 50%; background: white; color: black;
             display: flex; align-items: center; justify-content: center; z-index: 30;
             transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
@@ -158,10 +162,10 @@
         }
 
         .toggle-bg { background: #1a1a1a; border-radius: 20px; padding: 4px; display: flex; gap: 4px; }
-        .toggle-btn { padding: 4px 12px; border-radius: 16px; font-size: 10px; font-weight: 900; transition: all 0.3s; cursor: pointer; }
+        .toggle-btn { padding: 4px 10px; border-radius: 16px; font-size: 9px; font-weight: 900; transition: all 0.3s; cursor: pointer; white-space: nowrap; }
         .toggle-btn.active { background: white; color: black; }
 
-        .lang-btn { opacity: 0.5; transition: opacity 0.3s; cursor: pointer; }
+        .lang-btn { opacity: 0.5; transition: opacity 0.3s; cursor: pointer; font-size: 1.2rem; }
         .lang-btn.active { opacity: 1; }
     </style>
 </head>
@@ -169,19 +173,17 @@
 
     <div class="bg-glow"></div>
 
+    <div id="device-switcher-container" class="mb-6 z-50 reveal">
+        <div class="toggle-bg">
+            <div id="desktop-btn" class="toggle-btn active" onclick="setDevice('desktop')">DESKTOP</div>
+            <div id="mobile-btn" class="toggle-btn" onclick="setDevice('mobile')">MOBILE</div>
+        </div>
+    </div>
+
     <div id="app" class="w-full px-4 flex justify-center">
         <!-- Start Screen -->
         <div id="start-screen" class="game-card flex flex-col justify-center px-16 reveal">
-            <!-- Header Controls (Left: Device Switcher) -->
-            <div class="absolute top-8 left-16 flex items-center z-50">
-                <div class="toggle-bg">
-                    <div id="desktop-btn" class="toggle-btn active" onclick="setDevice('desktop')">DESKTOP</div>
-                    <div id="mobile-btn" class="toggle-btn" onclick="setDevice('mobile')">MOBILE</div>
-                </div>
-            </div>
-
-            <!-- Header Controls (Right: Difficulty & Language) -->
-            <div class="absolute top-8 right-16 flex items-center gap-6 z-50">
+            <div class="absolute top-6 right-6 flex items-center gap-4 z-50">
                 <div class="toggle-bg">
                     <div id="easy-btn" class="toggle-btn active" onclick="setDiff('easy')">EASY</div>
                     <div id="hard-btn" class="toggle-btn" onclick="setDiff('hard')">HARD</div>
@@ -233,9 +235,12 @@
                 <div class="v-slider-wrap" id="sat-bg"><input type="range" id="s-slider" class="v-slider" min="0" max="100" value="50" oninput="updateUserColor()"></div>
                 <div class="v-slider-wrap" id="light-bg"><input type="range" id="l-slider" class="v-slider" min="0" max="100" value="50" oninput="updateUserColor()"></div>
             </div>
-            <button onclick="lockGuess()" class="target-btn">
-                <svg width="36" height="36" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 8v8M8 12h8"/><circle cx="12" cy="12" r="3"/></svg>
-            </button>
+
+            <div class="absolute bottom-8 right-8 flex items-center gap-4">
+                <button onclick="lockGuess()" class="target-btn">
+                    <svg width="36" height="36" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 8v8M8 12h8"/><circle cx="12" cy="12" r="3"/></svg>
+                </button>
+            </div>
         </div>
 
         <!-- Result Screen -->
@@ -245,7 +250,7 @@
                     <div class="flex justify-between items-start">
                         <span class="text-[10px] font-black text-black/40 uppercase tracking-[0.2em]" id="p1-label-main">Player 1</span>
                         <div class="text-right">
-                            <div class="text-8xl font-black text-black leading-none tracking-tighter overflow-hidden" id="round-score-val">0.00</div>
+                            <div class="text-8xl font-black text-black leading-none tracking-tighter" id="round-score-val">0.00</div>
                         </div>
                     </div>
                     <div>
@@ -258,7 +263,7 @@
                     <div class="flex justify-between items-start">
                         <span class="text-[10px] font-black text-black/40 uppercase tracking-[0.2em]">Player 2</span>
                         <div class="text-right">
-                            <div class="text-8xl font-black text-black leading-none tracking-tighter overflow-hidden" id="p2-score-val">0.00</div>
+                            <div class="text-8xl font-black text-black leading-none tracking-tighter" id="p2-score-val">0.00</div>
                         </div>
                     </div>
                     <div>
@@ -306,6 +311,7 @@
                 memorize: "Memorize this color",
                 turn: "Your Turn",
                 p1: "Player 1",
+                p2: "Player 2",
                 selection: "Selection",
                 original: "Original",
                 p1_main: "Player 1",
@@ -317,8 +323,9 @@
                 show: "Wir zeigen dir eine Farbe, und du versuchst, sie nachzubauen.",
                 mode: "Solo oder Multiplayer?",
                 memorize: "Merk dir diese Farbe",
-                turn: "Du bist dran",
+                turn: "Dein Versuch",
                 p1: "Spieler 1",
+                p2: "Spieler 2",
                 selection: "Auswahl",
                 original: "Original",
                 p1_main: "Spieler 1",
@@ -332,6 +339,7 @@
                 memorize: "Memoriza este color",
                 turn: "Tu turno",
                 p1: "Jugador 1",
+                p2: "Jugador 2",
                 selection: "Selección",
                 original: "Original",
                 p1_main: "Jugador 1",
@@ -345,6 +353,7 @@
                 memorize: "この色を覚えてください",
                 turn: "あなたの番です",
                 p1: "プレイヤー 1",
+                p2: "プレイヤー 2",
                 selection: "選択",
                 original: "オリジナル",
                 p1_main: "プレイヤー 1",
@@ -374,7 +383,6 @@
                     c.classList.remove('is-mobile');
                 }
             });
-            // Update UI
             document.getElementById('desktop-btn').classList.toggle('active', device === 'desktop');
             document.getElementById('mobile-btn').classList.toggle('active', device === 'mobile');
         }
@@ -389,8 +397,6 @@
             document.getElementById('txt-show').innerText = t.show;
             document.getElementById('txt-mode').innerText = t.mode;
             document.getElementById('txt-memorize').innerText = t.memorize;
-            document.getElementById('txt-selection').innerText = t.selection;
-            document.getElementById('txt-selection-p2').innerText = t.selection;
             document.getElementById('txt-original').innerText = t.original;
             updateTurnLabel();
         }
@@ -459,11 +465,7 @@
             };
             currentPlayer = 1;
             p1Guess = null; p2Guess = null;
-            
-            document.getElementById('p2-display').classList.toggle('hidden', !isMultiplayer);
-            document.getElementById('pixel-right').classList.toggle('hidden', !isMultiplayer);
             document.getElementById('p1-label-main').innerText = isMultiplayer ? translations[currentLang].p1_main : translations[currentLang].final;
-            
             showNextColor();
         }
 
@@ -542,6 +544,7 @@
                 s: parseInt(document.getElementById('s-slider').value),
                 l: parseInt(document.getElementById('l-slider').value)
             };
+            
             if (currentPlayer === 1) {
                 p1Guess = user;
                 if (isMultiplayer) {
@@ -587,7 +590,9 @@
             if (isMultiplayer) {
                 const s2 = calculateScore(targetColor, p2Guess);
                 const c2 = `hsl(${p2Guess.h}, ${p2Guess.s}%, ${p2Guess.l}%)`;
+                document.getElementById('p2-display').classList.remove('hidden');
                 document.getElementById('p2-display').style.backgroundColor = c2;
+                document.getElementById('pixel-right').classList.remove('hidden');
                 document.getElementById('pixel-right').style.setProperty('--c', c2);
                 document.getElementById('pixel-right').style.setProperty('--ct', ct);
                 document.getElementById('p2-hsl-label').innerText = `H${p2Guess.h} S${p2Guess.s} B${p2Guess.l}`;
@@ -596,6 +601,8 @@
                 animateValue(document.getElementById('p2-score-val'), 0, s2, 2500);
                 bestOverallScore = Math.max(s1, s2);
             } else {
+                document.getElementById('p2-display').classList.add('hidden');
+                document.getElementById('pixel-right').classList.add('hidden');
                 animateValue(document.getElementById('round-score-val'), 0, s1, 2500, () => {
                     const currentHS = parseFloat(localStorage.getItem('colorGameHighscore') || "0.00");
                     if (s1 > currentHS) {
